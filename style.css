@@ -1,0 +1,68 @@
+.train-container {
+    border: 1px black solid;
+    width: 200px;
+    height: 100px;
+    margin: 5px;
+    position: relative;
+}
+
+.player {
+    width: 20px;
+    height: 20px;
+    border-radius: 0%;
+    border: 1px black solid;
+}
+
+.loot {
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    border: 1px black solid;
+}
+
+.diamond {
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    border: 1px black solid;
+    background:purple;
+}
+
+.loot{
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    border: 1px black solid;
+    background:beige;
+}
+.train {
+    height: 30px;
+    position: absolute;
+    bottom: 0px;
+    padding-left: 5px;
+    display:flex;
+}
+
+.card{
+    width:120px;
+    height:180px;
+    border:1px black solid;
+    margin:5px;
+    cursor:pointer;
+}
+
+.cardheader{
+    text-align:center;
+}
+
+.cardtable{
+    position:absolute;
+}
+
+.choose{
+    cursor:pointer;
+}
+
+.choose:hover{
+    opacity:0.2;
+}
