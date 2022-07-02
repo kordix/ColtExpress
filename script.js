@@ -1,7 +1,7 @@
 
 let gamedata = {
     phase: 'cards',
-    moves: 1,
+    moves: 3,
     currentmove: 0,
     currentplayer: 0,
     currentCardTable: 0,
@@ -31,13 +31,11 @@ let gamedata = {
         }
     ],
     items: [
-        { id: 'loot', value: 200, loc: 2 },
-        { id: 'loot', value: 500, loc: 1 },
-        { id: 'loot', value: 500, loc: 3 },
-        { id: 'loot', value: 500, loc: 4 },
-        { id: 'loot', value: 500, loc: 4 },
-        { id: 'loot', value: 500, loc: 3 },
+        { id: 'loot', value: 500, loc: 2 },
+        { id: 'loot', value: 500, loc: 2 },
         { id: 'loot', value: 500, loc: 10 },
+        { id: 'loot', value: 500, loc: 20 },
+
 
 
     ],
@@ -56,13 +54,24 @@ let gd = gamedata;
 
 function processGame() {
     console.log('processgame');
-    let array = document.querySelectorAll('.train');
 
-    array.forEach(element => {
+    document.querySelector('#faza').innerHTML = gd.phase;
+
+    document.querySelectorAll('.train').forEach(element => {
         element.innerHTML = '';
     });
 
+    document.querySelectorAll('.current').forEach(element => {
+        element.classList.remove('current');
+    });
+
     document.querySelector('#loots').innerHTML = ``;
+    document.querySelector('#loots2').innerHTML = ``;
+
+    document.querySelector('#shoots').innerHTML = gd.players[0].shoots;
+    document.querySelector('#shoots2').innerHTML = gd.players[1].shoots;
+
+
 
     gd.players.forEach(elem => {
         let element = 'train' + elem.loc;
@@ -75,16 +84,36 @@ function processGame() {
         document.querySelector('#playercards').innerHTML += `<div class="card" onclick="stackCard(${index})" style="border: 2px ${gd.players[gd.currentplayer].id} solid"><div class="cardheader">${elem.id}</div></div>`
     })
 
-    document.querySelector('#playerinfo').innerHTML = `<span style="font-weight:bold;color:${gd.players[gd.currentplayer].id}"> ${gd.players[gd.currentplayer].id} </span>`;
+    document.querySelector('#playerinfo').innerHTML = `<span style="color:${gd.players[0].id}" class="${gd.currentplayer == 0 && gd.phase =='cards' ? 'current' : ''}"> ${gd.players[0].id} </span>`;
+    document.querySelector('#playerinfo2').innerHTML = `<span style="color:${gd.players[1].id}" class="${gd.currentplayer == 1 && gd.phase =='cards' ? 'current' : ''}"> ${gd.players[1].id} </span>`;
+
+    if (gd.currentplayer == 0) {
+        document.querySelector('#playerinfoall1').classList.add('current');
+        document.querySelector('#playerinfoall2').classList.remove('current');
+
+    }
+
+    if (gd.currentplayer == 1) {
+        document.querySelector('#playerinfoall2').classList.add('current');
+        document.querySelector('#playerinfoall1').classList.remove('current');
+
+    }
+
 
     gd.items.forEach(elem => {
         let element = 'train' + elem.loc;
         if (elem.loc < 10) {
             document.getElementById(element).innerHTML += `<div class="${elem.id}"></div>    `
         } else {
-            if (elem.loc - 10 == gd.currentplayer) {
+            if (elem.loc == 10) {
                 document.querySelector('#loots').innerHTML += `<div class="${elem.id}" style="display:inline-block"></div>`
             }
+
+            if (elem.loc == 20) {
+                document.querySelector('#loots2').innerHTML += `<div class="${elem.id}" style="display:inline-block"></div>`
+            }
+
+
         }
 
     })
@@ -95,30 +124,21 @@ function runAction() {
     var new_element = old_element.cloneNode(true);
     old_element.parentNode.replaceChild(new_element, old_element);
 
+    document.querySelectorAll('.choose').forEach(element => {
+        element.classList.remove('choose');
+    })
+
+    document.querySelector('#actionbutton').style.visibility = 'hidden';
+
+
     let elem = gd.cardsTable[0];
 
-    if (!elem) {
-        gd.phase = 'cards';
-        document.querySelector('#actionbutton').style.visibility = 'hidden';
-        gd.laidCard = false;
-    }
+    gd.trainChoose = 0;
+    gd.shooted = 0;
+
 
     if (elem.id == 'move') {
-
-
-
-        let loc = gd.players[elem.player].loc;
-        if (loc > 0) {
-            document.querySelector('#train-all').children[gd.players[elem.player].loc - 1].classList.add('choose');
-            document.querySelector('#train-all').children[gd.players[elem.player].loc - 1].addEventListener('click', () => { chooseTrain(elem.player, loc - 1) }, true);
-        }
-
-        if (loc < 4) {
-            document.querySelector('#train-all').children[gd.players[elem.player].loc + 1].classList.add('choose');
-            document.querySelector('#train-all').children[gd.players[elem.player].loc + 1].addEventListener('click', () => { chooseTrain(elem.player, loc + 1) }, true);
-        }
-
-        document.querySelector('#actionbutton').style.visibility = 'hidden';
+        chooseTrainListener(elem.player, gd.players[elem.player].loc);
 
     }
 
@@ -140,21 +160,64 @@ function runAction() {
         if (item) {
             item.loc = 10 + elem.player;
         }
+
+        document.querySelector('#actionbutton').style.visibility = 'visible';
+
+    }
+
+    if (elem.id == 'hit') {
+        let targetplayer = 0;
+        if (elem.player == 0) {
+            targetplayer = 1;
+        }
+        if (gd.players[targetplayer].loc == gd.players[elem.player].loc) {
+            console.log('WCHODZI');
+            targetitem = {};
+            if (targetplayer == 0) {
+                targetitem = gd.items.find(el => el.loc == 10);
+            }
+            if (targetplayer == 1) {
+                targetitem = gd.items.find(el => el.loc == 20);
+            }
+            console.log(targetitem);
+            if (targetitem) {
+                targetitem.loc = gd.players[targetplayer].loc;
+            }
+            console.log(targetitem);
+
+
+            processGame();
+
+            chooseTrainListener(targetplayer);
+
+        }else{
+            document.querySelector('#actionbutton').style.visibility = 'visible';
+
+        }
+
+
+
+
+
     }
 
     document.querySelector('#roundcards').innerHTML = `<div class="card cardtable" style="border: 2px ${gd.players[elem.player].id} solid"><div class="cardheader">${elem.id}</div></div>`;
 
     gd.cardsTable.shift();
 
-    processGame();
-
-
     if (gd.cardsTable.length == 0) {
         gd.phase = 'cards';
         document.querySelector('#actionbutton').style.visibility = 'hidden';
         document.querySelector('#playercards').style.visibility = 'visible';
+        document.querySelector('#roundcards').innerHTML = '';
         gd.currentmove = 0;
+        gd.laidCard = false;
     }
+
+    processGame();
+
+
+   
 }
 
 
@@ -167,11 +230,34 @@ let chooseTrain = function (player, loc) {
     }
 }
 
+function chooseTrainListener(player) {
+    let loc = gd.players[player].loc;
+    if (loc > 0) {
+        document.querySelector('#train-all').children[gd.players[player].loc - 1].classList.add('choose');
+        document.querySelector('#train-all').children[gd.players[player].loc - 1].addEventListener('click', () => { chooseTrain(player, loc - 1) }, true);
+    }
+
+    if (loc < 4) {
+        document.querySelector('#train-all').children[gd.players[player].loc + 1].classList.add('choose');
+        document.querySelector('#train-all').children[gd.players[player].loc + 1].addEventListener('click', () => { chooseTrain(player, loc + 1) }, true);
+    }
+
+   
+
+}
+
 function makeShoot(loc) {
     if (gd.shooted == 0) {
         gd.shooted = 1;
-        gd.players.find((el) => el.loc == loc).shoots += 1;
+        if(gd.players.find((el) => el.loc == loc)){
+            gd.players.find((el) => el.loc == loc).shoots += 1;
+        }
     }
+
+    processGame();
+
+    document.querySelector('#actionbutton').style.visibility = 'visible';
+
 }
 
 
@@ -207,21 +293,22 @@ function endTurn() {
     }
 
 
-    processGame();
-
-    gd.currentmove++;
+  
 
     if (gd.currentmove > gd.moves) {
         gd.phase = 'action';
         document.querySelector('#actionbutton').style.visibility = 'visible';
-        console.log('hidden');
         document.querySelector('#playercards').style.visibility = 'hidden';
         document.querySelector('#endturnbutton').style.visibility = 'hidden';
+        document.querySelector('#roundcards').innerHTML = '';
 
     }
 
 
     document.querySelector('#endturnbutton').style.visibility = 'hidden';
+
+    gd.currentmove++;
+    processGame();
 
 
 }
